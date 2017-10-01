@@ -1,6 +1,32 @@
 #!/usr/bin/php
 <?php
+
+require_once __DIR__ . '/vendor/autoload.php';
 require "color_terminal.php";
+
+/* setup argument parser */
+$getopt = new \GetOpt\GetOpt([
+	['h', 'help', \GetOpt\GetOpt::NO_ARGUMENT, "Show this text."],
+	['n', 'dry-run', \GetOpt\GetOpt::NO_ARGUMENT, 'Only checks if there are migrations to run, won\'t perform any modifications.'],
+], [\GetOpt\GetOpt::SETTING_STRICT_OPERANDS => true]);
+$getopt->addOperand(new \GetOpt\Operand('username', \GetOpt\Operand::OPTIONAL));
+
+/* parse cli arguments */
+try {
+	$getopt->process();
+} catch (UnexpectedValueException $e) {
+	echo "Error: {$e->getMessage()}\n";
+	echo $getopt->getHelpText();
+	exit(1);
+}
+
+if ($getopt->getOption('help')){
+	echo $getopt->getHelpText();
+	exit(0);
+}
+
+$dryrun = $getopt->getOption('dry-run');
+$username = $getopt->getOperand(0);
 
 $file_dir = realpath(dirname($argv[0]));
 
@@ -22,36 +48,6 @@ $ignored_files = [
 /* append project-wide ignores */
 if ( is_callable(['MigrationConfig', 'ignored']) ){
 	$ignored_files = array_merge($ignored_files, MigrationConfig::ignored());
-}
-
-function usage() {
-	global $argv;
-	echo "Usage: ".$argv[0]." [options] <username>\n";
-	echo "Username may be optional, depending on your config file.\n";
-	echo "Options:\n";
-	echo "\t --dry-run (-n): Only checks if there are migrations to run, won't perform any migrations.\n";
-	echo "\t --help (-h): Show this text.\n";
-	die();
-}
-
-if($argc > 2) {
-	usage();
-}
-
-$dryrun = false; /* True if we should only check if there are migrations to run */
-$username = null;
-
-if(isset($argv[1])) {
-	if($argv[1] == "--help" || $argv[1] == '-h') {
-		usage();
-	} else if($argv[1] == "--dry-run" || $argv[1] == '-n') {
-		$dryrun = true;
-		if(isset($argv[2])) {
-			$username = $argv[2];
-		}
-	} else {
-		$username = $argv[1];
-	}
 }
 
 function ask_for_password() {
