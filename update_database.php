@@ -29,7 +29,7 @@ function usage() {
 	echo "Usage: ".$argv[0]." [options] <username>\n";
 	echo "Username may be optional, depending on your config file.\n";
 	echo "Options:\n";
-	echo "\t --check (-c): Checks if there are migrations to run, won't run any migrations.\n";
+	echo "\t --check (-c): Only checks if there are migrations to run, won't perform any migrations.\n";
 	echo "\t --help (-h): Show this text.\n";
 	die();
 }
@@ -38,14 +38,14 @@ if($argc > 2) {
 	usage();
 }
 
-$check_only = false; /* True if we should only check if there are migrations to run */
+$dryrun = false; /* True if we should only check if there are migrations to run */
 $username = null;
 
 if(isset($argv[1])) {
 	if($argv[1] == "--help" || $argv[1] == '-h') {
 		usage();
 	} else if($argv[1] == "--check" || $argv[1] == '-c') {
-		$check_only = true;
+		$dryrun = true;
 		if(isset($argv[2])) {
 			$username = $argv[2];
 		}
@@ -71,7 +71,7 @@ try {
 	die("fix_database misslyckades. Exception: ".$e->getMessage()."\n");
 }
 
-if($check_only) {
+if($dryrun) {
 	$count = 0;
 	foreach(migration_list() as $version => $file) {
 		if(!migration_applied($version)) ++$count;
