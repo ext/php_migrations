@@ -13,14 +13,14 @@ if(file_exists("$file_dir/config.php")) {
 	die("Please create config.php. You can look at config-example.php for ideas.\n");
 }
 
-$ignored_files = array(
+$ignored_files = [
 	'^\..*',                        /* skip hidden files */
 	'(?<!\.(php|sql))$',            /* everything not .php or .sql */
 	'^(update_database|create_migration|config(-example)?|color_terminal)\.php$',
-);
+];
 
 /* append project-wide ignores */
-if ( is_callable(array('MigrationConfig', 'ignored')) ){
+if ( is_callable(['MigrationConfig', 'ignored']) ){
 	$ignored_files = array_merge($ignored_files, MigrationConfig::ignored());
 }
 
@@ -124,11 +124,11 @@ function is_ignored($filename, &$match){
  * Creates a hash :migration_version => file_name
  */
 function migration_list() {
-	$files = array();
+	$files = [];
 
 	global $file_dir;
-	$search_dir = array($file_dir);
-	if ( is_callable(array('MigrationConfig', 'search_directory')) ){
+	$search_dir = [$file_dir];
+	if ( is_callable(['MigrationConfig', 'search_directory']) ){
 		$search_dir = MigrationConfig::search_directory();
 	}
 
@@ -284,7 +284,7 @@ function file_contents($filename) {
 
 function run_hook($hook, $arg = null) {
 	$hook_method = $hook . "_hook";
-	if ( is_callable(array('MigrationConfig', $hook_method)) ){
+	if ( is_callable(['MigrationConfig', $hook_method]) ){
 		if($arg == null) {
 			call_user_func("MigrationConfig::" . $hook_method);
 		} else {
