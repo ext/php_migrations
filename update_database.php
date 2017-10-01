@@ -4,8 +4,20 @@
 require_once __DIR__ . '/vendor/autoload.php';
 require "color_terminal.php";
 
+define('DEFAULT_CONFIG', 'config.php');
+
+function load_config($filename){
+	if (is_readable($filename)){
+		require($filename);
+	} else {
+		echo "Please create {$filename}. You can look at config-example.php for ideas.\n";
+		exit(1);
+	}
+}
+
 /* setup argument parser */
 $getopt = new \GetOpt\GetOpt([
+	['c', 'config', \GetOpt\GetOpt::REQUIRED_ARGUMENT, 'Configuration file to use. Default: "' . DEFAULT_CONFIG . '".' , realpath(dirname($argv[0])) . '/' . DEFAULT_CONFIG],
 	['h', 'help', \GetOpt\GetOpt::NO_ARGUMENT, "Show this text."],
 	['n', 'dry-run', \GetOpt\GetOpt::NO_ARGUMENT, 'Only checks if there are migrations to run, won\'t perform any modifications.'],
 ], [\GetOpt\GetOpt::SETTING_STRICT_OPERANDS => true]);
@@ -27,17 +39,9 @@ if ($getopt->getOption('help')){
 
 $dryrun = $getopt->getOption('dry-run');
 $username = $getopt->getOperand(0);
-
 $file_dir = realpath(dirname($argv[0]));
 
-if(file_exists("$file_dir/config.php")) {
-	require "$file_dir/config.php";
-} else if(file_exists(dirname(__FILE__)."/config.php")) {
-	$file_dir = dirname(__FILE__);
-	require "$file_dir/config.php";
-} else {
-	die("Please create config.php. You can look at config-example.php for ideas.\n");
-}
+load_config($getopt->getOption('config'));
 
 $ignored_files = [
 	'^\..*',                        /* skip hidden files */
