@@ -310,4 +310,3 @@ class QueryException extends Exception{
 		$this->message = $message;
 	}
 }
-?>
