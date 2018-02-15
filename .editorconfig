@@ -1,0 +1,18 @@
+# EditorConfig: http://EditorConfig.org
+
+root = true
+
+[*]
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = tab
+charset = utf-8
+
+# in markdown files trailing whitespace may be used to indicate a continuation
+[*.md]
+trim_trailing_whitespace = false
+
+# composer generates files with 4 spaces as indentation
+[composer.json]
+indent_style = space
+indent_size = 4

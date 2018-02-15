@@ -1,57 +1,57 @@
 #!/usr/bin/php
 <?php
-
-require_once __DIR__ . '/vendor/autoload.php';
 require "color_terminal.php";
 
-define('DEFAULT_CONFIG', 'config.php');
-
-function load_config($filename){
-	if (is_readable($filename)){
-		require($filename);
-	} else {
-		echo "Please create {$filename}. You can look at config-example.php for ideas.\n";
-		exit(1);
-	}
-}
-
-/* setup argument parser */
-$getopt = new \GetOpt\GetOpt([
-	['c', 'config', \GetOpt\GetOpt::REQUIRED_ARGUMENT, 'Configuration file to use. Default: "' . DEFAULT_CONFIG . '".' , realpath(dirname($argv[0])) . '/' . DEFAULT_CONFIG],
-	['h', 'help', \GetOpt\GetOpt::NO_ARGUMENT, "Show this text."],
-	['n', 'dry-run', \GetOpt\GetOpt::NO_ARGUMENT, 'Only checks if there are migrations to run, won\'t perform any modifications.'],
-], [\GetOpt\GetOpt::SETTING_STRICT_OPERANDS => true]);
-$getopt->addOperand(new \GetOpt\Operand('username', \GetOpt\Operand::OPTIONAL));
-
-/* parse cli arguments */
-try {
-	$getopt->process();
-} catch (UnexpectedValueException $e) {
-	echo "Error: {$e->getMessage()}\n";
-	echo $getopt->getHelpText();
-	exit(1);
-}
-
-if ($getopt->getOption('help')){
-	echo $getopt->getHelpText();
-	exit(0);
-}
-
-$dryrun = $getopt->getOption('dry-run');
-$username = $getopt->getOperand(0);
 $file_dir = realpath(dirname($argv[0]));
 
-load_config($getopt->getOption('config'));
+if(file_exists("$file_dir/config.php")) {
+	require "$file_dir/config.php";
+} else if(file_exists(dirname(__FILE__)."/config.php")) {
+	$file_dir = dirname(__FILE__);
+	require "$file_dir/config.php";
+} else {
+	die("Please create config.php. You can look at config-example.php for ideas.\n");
+}
 
-$ignored_files = [
+$ignored_files = array(
 	'^\..*',                        /* skip hidden files */
 	'(?<!\.(php|sql))$',            /* everything not .php or .sql */
 	'^(update_database|create_migration|config(-example)?|color_terminal)\.php$',
-];
+);
 
 /* append project-wide ignores */
-if ( is_callable(['MigrationConfig', 'ignored']) ){
+if ( is_callable(array('MigrationConfig', 'ignored')) ){
 	$ignored_files = array_merge($ignored_files, MigrationConfig::ignored());
+}
+
+function usage() {
+	global $argv;
+	echo "Usage: ".$argv[0]." [options] <username>\n";
+	echo "Username may be optional, depending on your config file.\n";
+	echo "Options:\n";
+	echo "\t --check (-c): Checks if there are migrations to run, won't run any migrations.\n";
+	echo "\t --help (-h): Show this text.\n";
+	die();
+}
+
+if($argc > 2) {
+	usage();
+}
+
+$check_only = false; /* True if we should only check if there are migrations to run */
+$username = null;
+
+if(isset($argv[1])) {
+	if($argv[1] == "--help" || $argv[1] == '-h') {
+		usage();
+	} else if($argv[1] == "--check" || $argv[1] == '-c') {
+		$check_only = true;
+		if(isset($argv[2])) {
+			$username = $argv[2];
+		}
+	} else {
+		$username = $argv[1];
+	}
 }
 
 function ask_for_password() {
@@ -71,7 +71,7 @@ try {
 	die("fix_database misslyckades. Exception: ".$e->getMessage()."\n");
 }
 
-if($dryrun) {
+if($check_only) {
 	$count = 0;
 	foreach(migration_list() as $version => $file) {
 		if(!migration_applied($version)) ++$count;
@@ -82,7 +82,7 @@ if($dryrun) {
 	} else {
 		echo "Database up-to-date\n";
 	}
-	exit($count > 0 ? 1 : 0);
+	exit($count);
 }
 
 create_migration_table_if_not_exists();
@@ -124,11 +124,11 @@ function is_ignored($filename, &$match){
  * Creates a hash :migration_version => file_name
  */
 function migration_list() {
-	$files = [];
+	$files = array();
 
 	global $file_dir;
-	$search_dir = [$file_dir];
-	if ( is_callable(['MigrationConfig', 'search_directory']) ){
+	$search_dir = array($file_dir);
+	if ( is_callable(array('MigrationConfig', 'search_directory')) ){
 		$search_dir = MigrationConfig::search_directory();
 	}
 
@@ -178,7 +178,7 @@ function run_migration($version, $filename) {
 			ColorTerminal::set("red");
 			echo "$filename is empty. Migrations aborted\n";
 			ColorTerminal::set("normal");
-			exit(1);
+			exit;
 		}
 		switch($ext) {
 			case "php":
@@ -205,7 +205,7 @@ function run_migration($version, $filename) {
 				echo "All following migrations aborted\n";
 				$db->rollback();
 				ColorTerminal::set("normal");
-				exit(1);
+				exit;
 		}
 		//Add migration to schema_migrations:
 		run_sql("INSERT INTO `schema_migrations` (`version`) VALUES ('$version');");
@@ -233,7 +233,7 @@ function run_migration($version, $filename) {
 
 		run_hook("post_rollback", $filename);
 
-		exit(1);
+		exit;
 	}
 }
 
@@ -243,10 +243,6 @@ function run_migration($version, $filename) {
 function migration_applied($version) {
 	global $db;
 	$stmt = $db->prepare("SELECT 1 FROM `schema_migrations` WHERE `version` = ?");
-	if ( $stmt === false ){
-		echo "{$db->error}\n";
-		exit(1);
-	}
 	$stmt->bind_param('s', $version);
 	$stmt->execute();
 	$res = $stmt->fetch();
@@ -284,7 +280,7 @@ function file_contents($filename) {
 
 function run_hook($hook, $arg = null) {
 	$hook_method = $hook . "_hook";
-	if ( is_callable(['MigrationConfig', $hook_method]) ){
+	if ( is_callable(array('MigrationConfig', $hook_method)) ){
 		if($arg == null) {
 			call_user_func("MigrationConfig::" . $hook_method);
 		} else {
@@ -310,3 +306,4 @@ class QueryException extends Exception{
 		$this->message = $message;
 	}
 }
+?>
