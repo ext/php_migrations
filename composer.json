@@ -1,12 +1,18 @@
 {
-	"name": "torandi/php-migrations",
-	"authors": [
-		{
-			"name": "Andreas Tarandi",
-			"email": "torandi@gmail.com"
-		}
-	],
-	"require": {
-		"ulrichsg/getopt-php": "^3.0"
-	}
+    "name": "ext/php-migrations",
+    "description": "Database migration scripts for PHP",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Sveningsson",
+            "email": "ext@sidvind.com"
+        },
+        {
+            "name": "Andreas Tarandi",
+            "email": "torandi@gmail.com"
+        }
+    ],
+    "require": {
+        "ulrichsg/getopt-php": "^3.0"
+    }
 }
