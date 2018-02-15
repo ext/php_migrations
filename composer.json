@@ -1,5 +1,5 @@
 {
-    "name": "ext/php-migrations",
+    "name": "sidvind/php-migrations",
     "description": "Database migration scripts for PHP",
     "license": "MIT",
     "authors": [

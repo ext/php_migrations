@@ -5,14 +5,14 @@ This is a php-script that helps you handling versions of your database in a
 format that works well with code versioning.
 
 This is a fork of [torandi/php_migrations](torandi/php_migrations) with
-*breaking* changes.
+**breaking** changes.
 
 [torandi/php_migrations]: https://github.com/torandi/php_migrations
 
 Configuration and setup
 -----------------------
 
-1. `composer require torandi/php-migrations`
+1. `composer require sidvind/php-migrations`
 2. Create a directory in your project named `migrations` (or whatever)
 3. Symlink `update_database.php` and `create_migration.php` into the directory.
 4. Copy `config-example.php` to `config.php` and edit it to fit your project
