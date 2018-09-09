@@ -1,5 +1,11 @@
 # PHP Migrations
 
+## 2.0.1
+
+### Bugfixes
+
+- Fix including `autoload.php` when installed by composer and symlinked.
+
 ## 2.0.0
 
 ### Breaking changes
