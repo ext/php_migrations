@@ -9,6 +9,14 @@ This is a fork of [torandi/php_migrations](torandi/php_migrations) with
 
 [torandi/php_migrations]: https://github.com/torandi/php_migrations
 
+Differences
+-----------
+
+- `update_database` will exit with error codes on any error.
+- `--check` is renamed `--dry-run`.
+- Misc additional CLI options such as `--config`.
+- Uses `getopt-php` instead of custom argument parsing.
+
 Configuration and setup
 -----------------------
 
