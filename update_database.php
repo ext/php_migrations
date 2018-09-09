@@ -1,7 +1,15 @@
 #!/usr/bin/php
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
+/* find composer autoload */
+if (file_exists(__DIR__ . '/vendor/autoload.php')){
+	/* local installation */
+	require_once __DIR__ . '/vendor/autoload.php';
+} else {
+	/* assume installed by composer */
+	require_once __DIR__ . '/../../autoload.php';
+}
+
 require "color_terminal.php";
 
 define('DEFAULT_CONFIG', 'config.php');
